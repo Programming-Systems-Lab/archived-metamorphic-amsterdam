@@ -1,0 +1,4 @@
+command = java -cp .\lib\JSAP-2.1.jar;.\lib\jdom.jar;.\lib\weka.jar;. NaiveBayesUpdatableTest @param
+param = -t input1 -l input2 -d output
+paramv = -t "trainingData.arff" -l "testingData.arff" -d "outputData.arff"
+if permute(input1) then equal(output)

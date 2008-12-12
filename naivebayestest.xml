@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<TESTDESCRIPTOR>
+	<EXECUTION>java -cp .\lib\JSAP-2.1.jar;.\lib\jdom.jar;.\lib\weka.jar;. NaiveBayesUpdatableTest @param</EXECUTION>
+	<PARAMETERS>-t "trainingData.arff" -l "testingData.arff" -d "outputData.arff"</PARAMETERS>
+	
+	<INPUT>
+		<VAR TYPE="ARFF_FILENAME">@param[2]</VAR>
+		<VAR TYPE="ARFF_FILENAME">@param[4]</VAR>	
+	</INPUT>
+
+	<OUTPUT>
+		<VAR TYPE="ARFF_FILENAME">@param[6]</VAR>	
+	</OUTPUT>
+
+	<PRE>
+		<PROPERTY> 
+                    <ASSERT>@op_numAttributes(@input.var(1)) == @op_numAttributes(@output.var(1))</ASSERT>
+                </PROPERTY>
+		<PROPERTY> 
+                    <ASSERT>@op_numInstances(@input.var(1)) == @op_numInstances(input.var(2)) / 2</ASSERT>
+                </PROPERTY>	
+	</PRE>
+
+	<POST>
+		<BRANCH OPTION="main" /> 
+		<BRANCH OPTION="sequantial"> @op_permute(@input.var(1)); </BRANCH>
+		<BRANCH OPTION="sequantial"> @op_inverse(@input.var(2)); </BRANCH>
+		<PROPERTY> <ASSERT>@equal( @branch1, @branch2)</ASSERT></PROPERTY>
+		<PROPERTY> 
+                    <OP>@op_inverse( @branch3.var(1))</OP>
+                    <ASSERT>@equal( @branch1, @branch3 )</ASSERT>
+                </PROPERTY>
+	</POST>
+
+</TESTDESCRIPTOR>
+
+

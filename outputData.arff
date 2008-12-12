@@ -1,0 +1,37 @@
+@relation candidateDonations
+
+@attribute state {FL,IL,NY}
+@attribute urbanOrRural {0,1}
+@attribute caucasionPercentage {0,1}
+@attribute africanPercentage {0,1}
+@attribute hispanicPercentage {0,1}
+@attribute asianPercentage {0,1}
+@attribute othersPercentage {0,1}
+@attribute maleYouthPercentage {0,1}
+@attribute maleMiddleagePercentage {0,1}
+@attribute maleElderPercentage {0,1}
+@attribute femaleYouthPercentage {0,1}
+@attribute femaleMiddleagePercentage {0,1}
+@attribute femaleElderPercentage {0,1}
+@attribute immigrationPercentage {0,1}
+@attribute newImmigrationPercentage {0,1}
+@attribute malePrivateEducationPercentage {0,1}
+@attribute femalePrivateEducationPercentage {0,1}
+@attribute maleAdultWellEducatedPercentage {0,1}
+@attribute femaleAdultWellEducatedPercentage {0,1}
+@attribute medianHouseholdIncome {lowerClass,middleClass,upperClass}
+@attribute medianNumberOfRoomsPerHouse {small,medium,large}
+@attribute homoPercentage {0,1}
+@attribute populationInFamilyPercentage {0,1}
+@attribute amount {lessThan500,from500to1000,moreThan1000}
+@attribute candidate {Romney,Obama,Guiliani,Clinton}
+
+@data
+FL,1,1,0,0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,upperClass,medium,0,0,moreThan1000,Romney
+FL,1,0,1,1,0,1,0,0,1,0,0,1,1,1,0,0,0,0,lowerClass,medium,0,0,from500to1000,Clinton
+FL,1,1,0,0,0,1,0,0,1,0,0,1,1,1,0,0,0,0,lowerClass,medium,0,0,moreThan1000,Romney
+FL,1,0,1,1,0,1,0,0,0,0,1,0,1,0,0,0,0,0,middleClass,medium,0,1,from500to1000,Obama
+FL,1,1,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,lowerClass,medium,1,0,moreThan1000,Romney
+FL,1,1,0,1,0,1,0,1,1,0,0,1,1,0,0,0,0,0,lowerClass,medium,1,0,lessThan500,Clinton
+FL,1,1,0,0,0,1,0,0,1,0,0,1,0,1,0,0,0,0,lowerClass,medium,0,0,from500to1000,Romney
+FL,1,1,0,1,0,1,0,1,0,1,1,0,1,1,0,0,0,0,lowerClass,medium,1,0,moreThan1000,Clinton

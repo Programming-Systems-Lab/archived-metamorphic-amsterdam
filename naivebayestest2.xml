@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<TESTDESCRIPTOR>
+	<EXECUTION>java NaiveBayes @param</EXECUTION>
+	<PARAMETERS>-t "trainingData.arff" -l "jdbc:mysql://localhost:3306/voynich" -q "select * from Candidate" -d "outputData.arff"</PARAMETERS>
+	
+	<INPUT>
+		<VAR TYPE="ARFF_FILENAME">@param[2]</VAR>
+		<VAR TYPE="JDBC_RESULTSET">@getResultSet(@param[4], @param[6])</VAR>	
+	</INPUT>
+
+	<OUTPUT>
+		<VAR TYPE="ARFF_FILENAME">@param[8]</VAR>	
+	</OUTPUT>
+
+	<PRE>
+		<PROPERTY> 
+                    <ASSERT>@op_numAttributes(@input.var(1)) == @op_numAttributes(@output.var(1))</ASSERT>
+            </PROPERTY>
+		<PROPERTY> 
+                    <ASSERT>@op_numInstances(@input.var(1)) == @op_numInstances(input.var(2)) / 2</ASSERT>
+            </PROPERTY>	
+	</PRE>
+
+	<POST>
+		<BRANCH OPTION="main" /> 
+		<BRANCH OPTION="sequantial"> @op_permute(@input.var(1)); </BRANCH>
+		<BRANCH OPTION="sequantial"> @op_negate( @input.var(1), "attr_4" ); </BRANCH>
+		<PROPERTY>
+			<ASSERT>@equal( @branch1, @branch2)</ASSERT>
+		</PROPERTY>
+		<PROPERTY> 
+                    <OP>@op_negate( @branch2.var(1), "attr_4" )</OP>
+                    <ASSERT>@equal( @branch1, @branch2 )</ASSERT>
+            </PROPERTY>
+	</POST>
+
+</TESTDESCRIPTOR>
+
+
