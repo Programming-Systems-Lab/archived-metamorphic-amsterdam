@@ -125,9 +125,6 @@ public class MetaDescriptorParser {
                             int number = j+1;
                             testFileContent += "\t\tSystem.out.println(\"Pre-condition:"+number+" checking failed. \"); \n\n";
                         }
-
-
-                        
                     }
                 }
                 
@@ -137,23 +134,21 @@ public class MetaDescriptorParser {
                     List branches = post.getChildren("BRANCH");
                     if (!branches.isEmpty())
                     {
+                        testFileContent += "\t"+"long cpuTimePreTrans = Util.getSystemTime(); \n";
                         for (int t=0; t<branches.size(); t++)
                         {
                             Element branch = (Element)branches.get(t);
                             int num = t+1;
-                            testFileContent += "\t// code block for branch"+num+"\n";
                             
+                            testFileContent += "\t// code block for branch"+num+"\n";
                             
                             
                             if (branch.getAttributeValue("OPTION").equals("main"))
                             {
-                                testFileContent += "\ttry {\n";
-                                testFileContent += "\t\tRuntime.getRuntime().exec(exec).waitFor();\n";
-                                //testFileContent += "\t\tRuntime.getRuntime().exec(\"cmd /C \"+exec);\n";
                                 
-                                testFileContent += "\t} catch(Exception e) {e.printStackTrace();}\n\n";
+                                testFileContent += "\t"+"final String mainExec="+"new String(exec);"+"\n";
                             } 
-                            if (branch.getAttributeValue("OPTION").equals("sequantial"))
+                            else
                             {
                                 String operationLine = Util.processKeywordsBranch(branch.getValue(), t+1);
                                 String paramStr = "";
@@ -162,24 +157,15 @@ public class MetaDescriptorParser {
                                     paramStr = parameters.getValue();
                                     paramStr = paramStr.replaceAll("\"", "\\\\"+"\"");
                                 }
-                                testFileContent += "\t" + "Input input" + num 
+                                testFileContent += "\t" + "final Input input" + num 
                                                     + " = DataProcessor.clone(input,"+num+");" + "\n";
-                                testFileContent += "\t" + "String param" + num 
-                                                    + " = DataProcessor.processParam(input,"+num+",\"" +paramStr+ "\");" + "\n";
-                                
-                                testFileContent += "\t" + "Output output" + num 
+                                testFileContent += "\t" + "final Output output" + num 
                                                     + " = DataProcessor.clone(output,"+ num +");" + "\n";
-                                testFileContent += "\t" + "param" + num 
-                                                    + " = DataProcessor.processParam(output,"+num+",param"+num+");" + "\n";
+                                testFileContent += "\t" + "final String param" + num 
+                                                    + " = DataProcessor.processParam(input, output,"+num+",\"" +paramStr+ "\");" + "\n";
+
                                 testFileContent += "\t" + operationLine + " \n";
-                                testFileContent += "\tString exec"+num+" = \""+Util.escapeChars(execution.getValue())+"\";\n";
-
-                                testFileContent += "\texec"+num+" = exec"+num+".replaceAll(\"@param\", param"+num+");\n";
-                                testFileContent += "\tSystem.out.println(\"Execution for branch"+num+": \"+exec"+num+");\n";
-                                
-
-                                testFileContent += "\ttry {\n";
-                                testFileContent += "\t\tRuntime.getRuntime().exec(exec"+num+").waitFor();\n";
+                                testFileContent += "\t"+"final String exec"+num+" = \""+Util.escapeChars(execution.getValue())+"\""+".replaceAll(\"@param\", param"+num+");\n";
                                 //testFileContent += "\t\tRuntime.getRuntime().exec(\"cmd /C \"+exec"+num+");\n";
                                 /*testFileContent += "\t\tOutput output" + num + " = new Output();\n";
                                 
@@ -195,16 +181,62 @@ public class MetaDescriptorParser {
                                     }
                                 }*/
                                 
+                            } 
+                            
+                        }
+                        testFileContent += "\t"+"long cpuTimeCostTrans = Util.getSystemTime()-cpuTimePreTrans; \n";
+                        testFileContent += "\t"+"System.out.println(\"CPU time cost for sandboxing: \"+cpuTimeCostTrans+\" nanosec\"); \n";
+                        for (int t=0; t<branches.size(); t++)
+                        {
+                            Element branch = (Element)branches.get(t);
+                            int num = t+1;
+                            
+                            testFileContent += "\t// code block for branch"+num+"\n";
+                            
+                            
+                            if (branch.getAttributeValue("OPTION").equals("main"))
+                            {
+                                testFileContent += "\t" + "new Thread(new Runnable() {\n";
+                                testFileContent += "\t\t" + "public void run() {\n";
+                                testFileContent += "\t\t\t" + "try {\n";
+                                testFileContent += "\t\t\t\t"+"final long cpuTimePreMain = Util.getSystemTime(); \n";
+
+                                testFileContent += "\t\t\t\t"+"Runtime.getRuntime().exec(mainExec).waitFor();\n";
+                                //testFileContent += "\t\tRuntime.getRuntime().exec(\"cmd /C \"+exec);\n";
+                                
+                                testFileContent += "\t\t\t\t"+"final long cpuTimeCostMain = Util.getSystemTime()-cpuTimePreMain; \n";
+                                testFileContent += "\t\t\t\t"+"System.out.println(\"CPU time cost for main branch: \"+cpuTimeCostMain+\" nanosec\"); \n";
+                                
+                                testFileContent += "\t\t\t" + "} catch(Exception ex) {} }\n";
+                                testFileContent += "\t\t" + "}).start();\n";
+                            } 
+                            if (branch.getAttributeValue("OPTION").equals("sequential"))
+                            {
+                                
+                                
+                                testFileContent += "\t"+"System.out.println(\"Execution for branch"+num+": \"+exec"+num+");\n";
+                                
+
+                                testFileContent += "\t"+"try {\n";
+                                testFileContent += "\t"+"Runtime.getRuntime().exec(exec"+num+").waitFor();\n";
                                 testFileContent += "\t} catch(Exception e) {e.printStackTrace();}\n\n";
                             } 
                             if (branch.getAttributeValue("OPTION").equals("para"))
                             {
-                                String operationLine = Util.processKeywords(branch.getValue());
+                                testFileContent += "\t" + "new Thread(new Runnable() {\n";
+                                testFileContent += "\t\t" + "public void run() {\n";
+                                testFileContent += "\t\t\t" + "try {\n";
+
                                 
-                                testFileContent += "\t" + operationLine + " \n";
-                                testFileContent += "\ttry {\n";                               
-                                testFileContent += "\t\tRuntime.getRuntime().exec(exec);\n";
-                                testFileContent += "\t} catch(Exception e) {e.printStackTrace();}\n\n";
+                                testFileContent += "\t\t\t\t"+"System.out.println(\"Execution for branch"+num+": \"+exec"+num+");\n";
+                                
+
+
+                                testFileContent += "\t\t\t\t"+"Runtime.getRuntime().exec(exec"+num+").waitFor();\n";
+  
+                                testFileContent += "\t\t\t" + "} catch(Exception ex) {} }\n";
+                                testFileContent += "\t\t" + "}).start();\n";
+
                             } 
                         }
                     }

@@ -92,7 +92,7 @@ public class SimpleParser {
                         String[] statements = line.split(" then ");
                         
                         Element newBranch = new Element("BRANCH");
-                        newBranch.setAttribute("OPTION", "sequantial");
+                        newBranch.setAttribute("OPTION", "sequential");
                         String branchOp = statements[0];
                         branchCounter++;
                         branchOp = replaceOperators(branchOp,branchCounter);

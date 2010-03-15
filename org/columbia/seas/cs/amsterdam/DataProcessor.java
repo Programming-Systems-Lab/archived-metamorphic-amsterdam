@@ -37,36 +37,8 @@ public class DataProcessor {
             {
                 Object var1 = o1.get(i);
                 Object var2 = o2.get(i);
-                if ( (var1 instanceof org.columbia.seas.cs.amsterdam.ArffFile) && (var2 instanceof org.columbia.seas.cs.amsterdam.ArffFile))
-                {
-                    System.out.println("checking outputs consistency");
-                    weka.core.converters.ArffLoader loader1 = new weka.core.converters.ArffLoader();
-                    weka.core.converters.ArffLoader loader2 = new weka.core.converters.ArffLoader();
-                    try{
-                        System.out.println("loading file:"+((File)var1).getAbsolutePath());
-                        loader1.setFile((File)var1);
-                        System.out.println("loading file:"+((File)var2).getAbsolutePath());
-                        loader2.setFile((File)var2);
-                        Instances structure1 = loader1.getStructure();
-                        Instances instances1 = loader1.getDataSet();
-                        instances1.setClassIndex(instances1.numAttributes() - 1);
-                        Instances structure2 = loader2.getStructure();
-                        Instances instances2 = loader2.getDataSet();
-                        instances2.setClassIndex(instances2.numAttributes() - 1);
-                        
-                        if (instances1.numInstances()!=instances1.numInstances())
-                            flag = false;
-                        for (int z=0; z<instances1.numInstances(); z++)
-                        {
-                            if (instances1.instance(z).classValue()!=instances2.instance(z).classValue())
-                                return false;
-                        }
-                        
-                        System.out.println("checking result: "+flag);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
+                flag = ((Variable)var1).equal((Variable)var2);
+                
             }
         }
         
@@ -85,26 +57,7 @@ public class DataProcessor {
             {
                 Object var1 = i1.get(i);
                 Object var2 = i2.get(i);
-                if ( (var1 instanceof org.columbia.seas.cs.amsterdam.ArffFile) && (var2 instanceof org.columbia.seas.cs.amsterdam.ArffFile))
-                {
-                    System.out.println("checking outputs consistency");
-                    weka.core.converters.ArffLoader loader1 = new weka.core.converters.ArffLoader();
-                    weka.core.converters.ArffLoader loader2 = new weka.core.converters.ArffLoader();
-                    try{
-                        loader1.setFile((File)var1);
-                        loader2.setFile((File)var2);
-                        Instances structure1 = loader1.getStructure();
-                        Instances instances1 = loader1.getDataSet();
-                        Instances structure2 = loader2.getStructure();
-                        Instances instances2 = loader2.getDataSet();
-                        
-                        if (instances1.numInstances()!=instances1.numInstances())
-                            flag = false;
-                        System.out.println("checking result: "+flag);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
+                flag = ((Variable)var1).equal((Variable)var2);
             }
         }
         
@@ -148,28 +101,13 @@ public class DataProcessor {
     // create copy of the original file then permute the order of the data instances
     public static void permute(Object o)
     {
-        if (o instanceof org.columbia.seas.cs.amsterdam.ArffFile)
-        {
-            permute((ArffFile)o);
-        }
-        if (o instanceof org.columbia.seas.cs.amsterdam.DBResultSet)
-        {
-            permute((DBResultSet)o);
-        }
+        ((Variable)o).permute();
     }
 
     // create copy of the original file then negate the value of the data instances's column or row
-    public static void negate(Object o, String operator, int number)
+    public static void negate(Object o, int colNumber, int rowNumber)
     {
-        System.out.println("Negating values  ");
-        if (o instanceof org.columbia.seas.cs.amsterdam.ArffFile)
-        {
-            negate((ArffFile)o, operator, number);
-        }
-        if (o instanceof org.columbia.seas.cs.amsterdam.DBResultSet)
-        {
-            //permute((DBResultSet)o);
-        }
+        ((Variable)o).negate(colNumber, rowNumber);
     }
     
     public static void negate(ArffFile af, String operator, int number)
@@ -218,14 +156,7 @@ public class DataProcessor {
     // create copy of the original file then inverse the order of the data instances
     public static void inverse(Object o)
     {
-        if (o instanceof org.columbia.seas.cs.amsterdam.ArffFile)
-        {
-            inverse((ArffFile)o);
-        }
-        if (o instanceof org.columbia.seas.cs.amsterdam.DBResultSet)
-        {
-            //inverse((DBResultSet)o);
-        }
+        ((Variable)o).inverse();
     }
     
     public static void inverse(ArffFile af)
@@ -300,6 +231,33 @@ public class DataProcessor {
                     e.printStackTrace();
                 }
             }
+            else if (var instanceof org.columbia.seas.cs.amsterdam.ModelFile )               
+            {
+                String path = ((org.columbia.seas.cs.amsterdam.ModelFile)var).getPath();
+
+                try {
+                
+                    org.columbia.seas.cs.amsterdam.ModelFile newFile 
+                        = new org.columbia.seas.cs.amsterdam.ModelFile( "./tmp/branch"+offset+"/"+path);
+
+
+                    FileReader fileIn = new FileReader((org.columbia.seas.cs.amsterdam.ArffFile)var);
+                    FileWriter fileOut = new FileWriter(newFile);
+                    int c;
+
+                    while ((c = fileIn.read()) != -1)
+                    fileOut.write(c);
+
+                    fileIn.close();
+                    fileOut.close();   
+                
+                    newIn.add(newFile);
+                        
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
             else{
                 newIn.add(var);
             }
@@ -309,13 +267,14 @@ public class DataProcessor {
     
     public static String processParam(ArrayList in, int offset, String paramStr)
     {
-        String newStr = paramStr;
+        String newStr = new String(paramStr);
         for (int i=0; i<in.size(); i++)
         {
             Object var = in.get(i);
-            if (var instanceof org.columbia.seas.cs.amsterdam.ArffFile )               
+            if (var instanceof File )               
             {
-                String path = ((org.columbia.seas.cs.amsterdam.ArffFile)var).getPath();
+                String path = ((File)var).getPath();
+                //System.out.println("path:"+path);
                 //System.out.println("old string:"+newStr);
                 newStr = newStr.replaceAll(path, "./tmp/branch"+offset+"/"+path);
                 //System.out.println("new string:"+newStr);
@@ -324,6 +283,14 @@ public class DataProcessor {
         //newStr = newStr.replaceAll("\"", "\\\\"+"\"");
         return newStr;
 
+    }
+    
+    public static String processParam(ArrayList in, ArrayList out, int offset, String paramStr)
+    {
+        String str = "";
+        str = processParam(in, offset, paramStr);
+        str = processParam(out, offset, str);
+        return str;
     }
     
     
@@ -335,7 +302,9 @@ public class DataProcessor {
         Output newOut = new Output();
         for (int i=0; i<out.size(); i++)
         {
+            
             Object var = out.get(i);
+            //System.out.println(var instanceof org.columbia.seas.cs.amsterdam.ModelFile);
             if (var instanceof org.columbia.seas.cs.amsterdam.ArffFile )               
             {
                 String path = ((org.columbia.seas.cs.amsterdam.ArffFile)var).getPath();
@@ -344,6 +313,21 @@ public class DataProcessor {
                 
                     org.columbia.seas.cs.amsterdam.ArffFile newFile 
                         = new org.columbia.seas.cs.amsterdam.ArffFile( "./tmp/branch"+offset+"/"+path);       
+                    newOut.add(newFile);
+                        
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            else if (var instanceof org.columbia.seas.cs.amsterdam.ModelFile )               
+            {
+                String path = ((org.columbia.seas.cs.amsterdam.ModelFile)var).getPath();
+
+                try {
+                
+                    org.columbia.seas.cs.amsterdam.ModelFile newFile 
+                        = new org.columbia.seas.cs.amsterdam.ModelFile( "./tmp/branch"+offset+"/"+path);       
                     newOut.add(newFile);
                         
                 } catch (Exception e)

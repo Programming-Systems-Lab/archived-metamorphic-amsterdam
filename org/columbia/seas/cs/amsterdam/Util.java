@@ -10,6 +10,7 @@
 package org.columbia.seas.cs.amsterdam;
 
 import com.martiansoftware.jsap.*;
+import java.lang.management.*;
 
 /**
  *
@@ -27,6 +28,10 @@ public class Util {
         if (typeString.equals("ARFF_FILENAME"))
         {
             content += "\tArffFile " + nameString + " = new ArffFile(" + value + ");\n";
+        }
+        if (typeString.equals("MODEL_FILENAME"))
+        {
+            content += "\tModelFile " + nameString + " = new ModelFile(" + value + ");\n";
         }
         if (typeString.equals("RESULT_SET"))
         {
@@ -88,6 +93,27 @@ public class Util {
         str = str.replaceAll("\\\\", "\\\\"+"\\\\");
         str = str.replaceAll("\"","\\\\"+"\"");
         return str;
+    }
+    
+        public static long getCpuTime( ) {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean( );
+        return bean.isCurrentThreadCpuTimeSupported( ) ?
+        bean.getCurrentThreadCpuTime( ) : 0L;
+        }
+ 
+    /** Get user time in nanoseconds. */
+    public static long getUserTime( ) {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean( );
+        return bean.isCurrentThreadCpuTimeSupported( ) ?
+        bean.getCurrentThreadUserTime( ) : 0L;
+    }
+
+    /** Get system time in nanoseconds. */
+    public static long getSystemTime( ) {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean( );
+    
+        return bean.isCurrentThreadCpuTimeSupported( ) ?
+        ( bean.getCurrentThreadCpuTime() - bean.getCurrentThreadUserTime() ) : 0L;
     }
     
 }
